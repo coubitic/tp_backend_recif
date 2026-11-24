@@ -1,3 +1,5 @@
+import { AppError } from "../errors/app-error.js";
+
 export type Rule = (value: unknown) => string | null;
 export type Schema = Record<string, Rule>;
 
@@ -58,3 +60,10 @@ export function validate<T = Record<string, any>>(
     return errors.length > 0 ? { ok: false, errors } : { ok: true, data: data as T };
 }
 
+
+// Valide et renvoie les données, ou lève une AppError 400 VALIDATION_ERROR
+export function parse<T = Record<string, any>>(schema: Schema, input: unknown, options: { partial?: boolean } = {}): T {
+    const result = validate<T>(schema, input, options);
+    if (!result.ok) throw new AppError(400, "VALIDATION_ERROR", result.errors.join(" ; "));
+    return result.data;
+}
